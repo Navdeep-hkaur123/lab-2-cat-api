@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4660e2;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="number"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #343333;
+        }
+        label {
+            margin-right: 10px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <button onclick="allNames()">All Names</button>
+    <br><br>
+    <button onclick="catsByHealth()">Health Issues</button>
+    <input type="number" id="healthInput" placeholder="Enter Health Issue Number">
+    <br><br>
+    <label for="imperial">Imperial</label>
+    <input type="radio" id="imperial" name="unit" value="imperial" checked>
+    <label for="metric">Metric</label>
+    <input type="radio" id="metric" name="unit" value="metric">
+    <button onclick="displayWeights()">Weight</button>
+    <br><br>
+    <button onclick="intelligenceFriendly()">Intelligence - Friendly</button>
+    <br><br>
+    <button onclick="averageIntelligence()">Average Intelligence</button>
+    <br> <br>
+    <button onclick="averageIntelligenceFriendly()">Average Intelligence for Child Friendly</button>
+
+    <div id="result"></div>
+
+    <script>
+
+        function allNames(){
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = "";
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(cat => {
+                        const lineBreak = document.createElement('br');
+                        resultElement.appendChild(document.createTextNode(cat.name));
+                        resultElement.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+        function catsByHealth(){
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const healthInput = document.getElementById('healthInput').value;
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = "";
+            
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const filteredCats = data.filter(cat => cat.health_issues === parseInt(healthInput));
+                    const totalCountElement = document.createElement('div');
+                     totalCountElement.textContent = `Health Issues for  ${healthInput} : `;
+                     resultElement.appendChild(totalCountElement);
+                    if (filteredCats.length === 0) {
+                        resultElement.textContent = "No cats found with that health issue.";
+                    } else {
+                        filteredCats.forEach(cat => {
+                            const lineBreak = document.createElement('br');
+                            resultElement.appendChild(document.createTextNode(cat.name));
+                            resultElement.appendChild(lineBreak);
+                        });
+                        
+                        const totalCountElement = document.createElement('div');
+                totalCountElement.textContent = `total=${filteredCats.length}`;
+                resultElement.appendChild(totalCountElement);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+        
+
+        function displayWeights(){
+            const weightsElement = document.getElementById('result');
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const selectedUnit = document.querySelector('input[name="unit"]:checked').value;
+            if (selectedUnit === 'metric') {
+        weightsElement.innerHTML = "Weight in Metric:<br>";
+    } else {
+        weightsElement.innerHTML = "Weight in Imperial:<br>";
+    }
+ 
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(cat => {
+                        const lineBreak = document.createElement('br');
+                        var weightText;
+                        if (selectedUnit === 'metric') {
+                            weightText = `${cat.weight.metric} `;
+                            
+                        } else {
+                            weightText = ` ${cat.weight.imperial} `;
+                        }
+                        weightsElement.appendChild(document.createTextNode(weightText));
+                        weightsElement.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+        function intelligenceFriendly(){
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = "I - F<br>";
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(cat => {
+                        
+                        var intelligenceText = `${cat.intelligence} . ${cat.child_friendly}<br>`;
+                        resultElement.innerHTML += intelligenceText ;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+
+        function averageIntelligence(){
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = "";
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    var totalIntelligence = 0;
+                    data.forEach(cat => {
+                        totalIntelligence += cat.intelligence;
+                    });
+                    const averageIntelligence = totalIntelligence / data.length;
+                    resultElement.textContent = `Average Intelligence : ${averageIntelligence.toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+
+        function averageIntelligenceFriendly(){
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = "";
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                  var  totalIntelligence = 0;
+                    var count = 0;
+                    data.forEach(cat => {
+                        if (cat.child_friendly >= 4) { 
+                            totalIntelligence += cat.intelligence;
+                            count++;
+                        }
+                    });
+                    if (count === 0) {
+                        resultElement.textContent = "No child-friendly cats found.";
+                    } else {
+                        const averageIntelligence = totalIntelligence / count;
+                        resultElement.textContent = `Average Intelligence : ${averageIntelligence.toFixed(2)}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+    </script>
+    
+</body>
+</html>
